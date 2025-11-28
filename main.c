@@ -1,9 +1,12 @@
 #include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
 
 #define name_length 50
+#define EAN_length 14
 
 typedef struct inventory{
-    int EAN[14];
+    char EAN[EAN_length];
     char name[name_length];
     int quantity;
     double price; 
@@ -11,7 +14,7 @@ typedef struct inventory{
 }inv;
 
 typedef struct orderItem{
-    int EAN[14];
+    char EAN[EAN_length];
     int quantity;
     int priority;
     struct orderItem* next;//sxoliase TODO
@@ -34,10 +37,53 @@ typedef struct costumer{
     struct costumer* next; //sxoliase TODO
 }costumer;
 
-inv* new_Inventory_Node(int EAN[14], char ){ //δημιουργία καινούριου node     
-    inv* newNode = (inv*)malloc(sizeof(inv));
-    
+inv* newInventoryNode(char EAN[EAN_length], char name[], int quantity, double price){ //δημιουργία καινούριου node     
+    inv* node = (inv*)malloc(sizeof(inv));
+    if(!node) return NULL;
+
+    strcpy(node->EAN, EAN);
+    strcpy(node->name, name);               
+    node->quantity = quantity;              
+    node->price = price;
+    node->next = NULL;
+
+    return node;
 } 
+
+void insertInventory(inv** head, inv* newInventoryNode){
+    if((*head == NULL) && sizeof(newInventoryNode->EAN) < 4 || sizeof(newInventoryNode->EAN) > 13){  //elegxos ama sizeof(EAN) > 4 && < 13 
+        perror("insufficient amount of 'EAN'(barcode) digits");
+        return;
+    }
+    
+    if(*head == NULL && sizeof(newInventoryNode->EAN) > 4){
+        *head = newInventoryNode;
+        return;
+    }
+
+    inv* temp = *head;
+    while(temp->next != NULL){
+        temp = temp->next;
+    }
+    temp->next = newInventoryNode;
+}
+
+void recommend(inv** head, inv* newInventoryNode, char EAN[]){
+    int i = 0, counter = 0;
+    int found = 0;
+    for(i; EAN[i] == '\0'; i++){
+        counter++;
+    }
+
+    inv* temp = *head;
+    while(temp->next != NULL){
+        if(strncmp(temp->EAN,EAN,counter)){
+            printf("EAN: %s, name: %s, quantity: %d\n",temp->EAN,temp->name,temp->quantity);
+            found = 1;
+        }
+    }
+    if(!found) printf("No products found with the given EAN(barcode) code");
+}
 
 int main(){
 
